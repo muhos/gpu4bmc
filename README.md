@@ -42,11 +42,11 @@ For installing the driver + CUDA, run the following commands:<br>
 `sudo apt-get -y install cuda`<br>
 
 Now the GPU checker is ready to install by running the install script via the command `. install.sh -g`. 
-Mind the space after the dot to force the script to run under the current shell, thus keeping the value of the enviromental variable `PFROSTCONFIG` intact. The variable points to the configuration file location which set by default to `interface/satcheck-parafrost/parafrost_config.ini`.
+Mind the space after the dot to force the script to run under the current shell, thus keeping the value of the enviromental variable `PFROSTCONFIG` intact. The variable points to the configuration file location which set by default to `interface/satcheck-parafrost/parafrost_config.ini`.<br>
+
 The `CBMC_paraforst_gpu` binary will be created by default in the build directory.<br>
 
-## CPU
-To build a CPU-only version of CBMC + ParaFROST, run `./install.sh -c`.<br>
+To build a CPU-only version of CBMC + ParaFROST, run `. install.sh -c`.<br>
 
 # Test
 The GPU-accelerated version of CBMC with ParaFROST has a complete artifact we created to experimentally evaluate the effectiveness of accelerating Boumded Model Checking (BMC) using GPUs on verifying AWS C99 package. The artifact can be downloaded [here](https://gears.win.tue.nl/software/gpu4bmc/).<br>
