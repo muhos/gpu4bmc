@@ -262,17 +262,18 @@ ruler
 log "Setting ParaFROST configuration file to:"
 unset PFROSTCONFIG
 configfile=parafrost_config.ini
-configsrc=interface/satcheck-parafrost/$configfile
-configpath=
+configsrc=$PWD/interface/satcheck-parafrost/$configfile
+[ ! -f $configsrc ] && error "cannot find $configsrc"
+configdest=
 if [[ "$config" != "" ]]; then
-	configpath=$config
+	[ ! -d $config ] && error "cannot find $config"
+	cp $configsrc $config
+	configdest=$config/$configfile	
 else
-	configpath=$PWD/$bmcdir/parafrost
+	configdest=$configsrc
 fi
-[ ! -d $configpath ] && error "cannot find $configpath"
-cp $configsrc $configpath
-export PFROSTCONFIG=$configpath/$configfile	
-log " -> $PFROSTCONFIG"
+export PFROSTCONFIG=$configdest	
+log "  $PFROSTCONFIG"
 
 [ -f $logfile ] && mv $logfile $logdir/cbmc_install.log
 [ -f $bmcdir/parafrost/install.log ] && cp $bmcdir/parafrost/install.log $logdir/parafrost_install.log
