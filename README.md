@@ -41,7 +41,8 @@ For installing the driver + CUDA, run the following commands:<br>
 `sudo apt-get update`<br>
 `sudo apt-get -y install cuda`<br>
 
-Now the GPU checker is ready to install by running the install script via the command `./install.sh -g`. 
+Now the GPU checker is ready to install by running the install script via the command `. install.sh -g`. 
+Mind the space after the dot to force the script to run under the current shell, thus keeping the value of the enviromental variable `PFROSTCONFIG` intact. The variable points to the configuration file location which set by default to `interface/satcheck-parafrost/parafrost_config.ini`.
 The `CBMC_paraforst_gpu` binary will be created by default in the build directory.<br>
 
 ## CPU
