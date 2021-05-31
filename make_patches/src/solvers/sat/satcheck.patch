@@ -1,0 +1,16 @@
+--- satcheck.h_old	2021-05-30 01:12:47.612231500 +0200
++++ satcheck.h	2021-05-30 13:08:27.212631200 +0200
+@@ -122,6 +122,13 @@
+ typedef satcheck_cadicalt satcheckt;
+ typedef satcheck_cadicalt satcheck_no_simplifiert;
+ 
++#elif defined SATCHECK_PARAFROST
++
++#include "satcheck-parafrost/satcheck_parafrost.h"
++
++typedef satcheck_parafrostt satcheckt;
++typedef satcheck_parafrostt satcheck_no_simplifiert;
++
+ #endif
+ 
+ #endif // CPROVER_SOLVERS_SAT_SATCHECK_H

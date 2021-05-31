@@ -1,0 +1,24 @@
+--- Makefile_old	2021-05-29 14:35:36.692231500 +0200
++++ Makefile	2021-05-30 21:18:10.342631200 +0200
+@@ -161,8 +161,20 @@
+ 	@mv cadical-$(cadical_release) ../cadical
+ 	@cd ../cadical && CXX=$(CXX) ./configure -O3 -s -j && make
+ 	@$(RM) $(cadical_release).tar.gz
++	
++parafrost_release=2.2.3
++parafrost_tag=parafrost-$(parafrost_release)
++parafrost_tar=$(parafrost_tag).tar.gz
++parafrost-download:
++	@echo "Downloading ParaFROST version $(parafrost_release)"
++	@$(DOWNLOADER) https://github.com/muhos/ParaFROST/archive/$(parafrost_tar)
++	@$(TAR) xfz $(parafrost_tar)
++	@rm -Rf ../parafrost
++	@mv ParaFROST-$(parafrost_tag) ../parafrost
++	@cd ../parafrost && ./install.sh -c -g --less
++	@$(RM) $(parafrost_tar)
+ 
+ doc :
+ 	doxygen
+ 
+-.PHONY: minisat2-download cudd-download glucose-download cadical-download
++.PHONY: minisat2-download cudd-download glucose-download cadical-download parafrost-download

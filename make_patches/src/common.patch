@@ -1,0 +1,108 @@
+--- common_old	2021-05-29 14:22:41.532231500 +0200
++++ common	2021-05-31 17:11:52.715563400 +0200
+@@ -25,6 +25,31 @@
+   LIBEXT = .a
+   OBJEXT = .o
+   DEPEXT = .d
++
++# PARAFROST (GPU)  
++ifneq ($(PARAFROSTGPU),)
++  # CUDA path
++  CUDA_PATH ?= /usr/local/cuda
++
++  # device compiler
++  NVCC := $(CUDA_PATH)/bin/nvcc -ccbin
++
++  # GPU arch
++  SMS ?= 60 70 75
++  ifeq ($(SMS),)
++    $(error No SM architectures have been specified)
++  endif
++  ifeq ($(GENCODE_FLAGS),)
++    # Generate SASS code for each SM architecture in $(SMS)
++    $(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
++    # Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
++    HIGHEST_SM := $(lastword $(sort $(SMS)))
++    ifneq ($(HIGHEST_SM),)
++      GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
++    endif
++  endif
++endif
++  
+ ifeq ($(BUILD_ENV_),MinGW)
+   EXEEXT = .exe
+ else
+@@ -38,7 +63,14 @@
+   LINKFLAGS += -mmacosx-version-min=10.9 -stdlib=libc++
+   LINKNATIVE += -mmacosx-version-min=10.9 -stdlib=libc++
+ else
+-  CP_CXXFLAGS += -MMD -MP -std=c++11
++  # PARAFROST
++  ifeq ($(PARAFROSTGPU),../../parafrost)
++    CP_CXXFLAGS += -Xcompiler -MMD -Xcompiler -MP -Xcompiler -std=c++14
++  else ifeq ($(PARAFROSTCPU),../../parafrost)
++    CP_CXXFLAGS += -MMD -MP -std=c++14
++  else
++    CP_CXXFLAGS += -MMD -MP -std=c++11
++  endif
+ endif
+ ifeq ($(filter -O%,$(CXXFLAGS)),)
+   CP_CXXFLAGS += -O2
+@@ -72,16 +104,31 @@
+     CXX    = clang++
+   endif
+ else
+-  LINKLIB = ar rcT $@ $^
+-  LINKBIN = $(CXX) $(LINKFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
+-  LINKNATIVE = $(HOSTCXX) -o $@ $^
+-  ifeq ($(origin CC),default)
+-    CC     = gcc
+-    #CC     = icc
+-  endif
+-  ifeq ($(origin CXX),default)
+-    CXX    = g++
+-    #CXX    = icpc
++  # PARAFROST (GPU)  
++  ifneq ($(PARAFROSTGPU),)
++    LINKLIB = ar rc $@ $^
++    LINKBIN = $(NVCC) g++ $(LINKFLAGS) -o $@ $^ $(LIBS)
++    LINKNATIVE = $(NVCC) g++ -o $@ $^
++    ifeq ($(origin CC),default)
++      CC     = gcc
++      #CC     = icc
++    endif
++    ifeq ($(origin CXX),default)
++      CXX    = $(NVCC) g++
++      #CXX    = icpc
++    endif
++  else
++    LINKLIB = ar rcT $@ $^
++    LINKBIN = $(CXX) $(LINKFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
++    LINKNATIVE = $(HOSTCXX) -o $@ $^
++    ifeq ($(origin CC),default)
++      CC     = gcc
++      #CC     = icc
++    endif
++    ifeq ($(origin CXX),default)
++      CXX    = g++
++      #CXX    = icpc
++    endif
+   endif
+ endif
+ ifeq ($(origin YACC),default)
+@@ -194,6 +241,15 @@
+   CP_CXXFLAGS += -DHAVE_CADICAL
+ endif
+ 
++ifneq ($(PARAFROSTCPU),)
++  CP_CXXFLAGS += -DHAVE_PARAFROST
++endif
++
++ifneq ($(PARAFROSTGPU),)
++  CP_CXXFLAGS += -DHAVE_PARAFROST $(GENCODE_FLAGS) 
++  INCLUDES += -I$(CUDA_PATH)/include
++endif
++
+ 
+ ifneq ($(CUDD),)
+   CP_CXXFLAGS += -DHAVE_CUDD

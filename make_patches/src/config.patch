@@ -1,0 +1,37 @@
+--- config.inc_old	2021-05-29 14:18:58.422231500 +0200
++++ config.inc	2021-05-30 21:10:34.782631200 +0200
+@@ -33,9 +33,18 @@
+ #IPASIR = ../../ipasir
+ #GLUCOSE = ../../glucose-syrup
+ #CADICAL = ../../cadical
++#PARAFROSTCPU = ../../parafrost
++#PARAFROSTGPU = ../../parafrost
++
++ifneq ($(PARAFROSTGPU),)
++  #pedantic not compatible with Thrust
++  NVFLAGS  := $(filter-out -pedantic,$(CXXFLAGS))
++  CXXFLAGS := $(addprefix -Xcompiler ,$(NVFLAGS))
++endif  
++
+ 
+ # select default solver to be minisat2 if no other is specified
+-ifeq ($(BOOLEFORCE)$(CHAFF)$(GLUCOSE)$(IPASIR)$(LINGELING)$(MINISAT)$(MINISAT2)$(PICOSAT)$(CADICAL),)
++ifeq ($(BOOLEFORCE)$(CHAFF)$(GLUCOSE)$(IPASIR)$(LINGELING)$(MINISAT)$(MINISAT2)$(PICOSAT)$(CADICAL)$(PARAFROSTCPU)$(PARAFROSTGPU),)
+   MINISAT2 = ../../minisat-2.2.1
+ endif
+ 
+@@ -71,6 +80,14 @@
+   CP_CXXFLAGS += -DSATCHECK_CADICAL
+ endif
+ 
++ifneq ($(PARAFROSTCPU),)
++  CP_CXXFLAGS += -DSATCHECK_PARAFROST
++endif
++
++ifneq ($(PARAFROSTGPU),)
++  CP_CXXFLAGS += -DSATCHECK_PARAFROST
++endif
++
+ # Signing identity for MacOS Gatekeeper
+ 
+ OSX_IDENTITY="Developer ID Application: Daniel Kroening"

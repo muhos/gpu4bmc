@@ -1,0 +1,14 @@
+--- Makefile_old	2021-05-30 18:22:57.612631200 +0200
++++ Makefile	2021-05-30 20:59:56.812631200 +0200
+@@ -115,7 +115,11 @@
+ ###############################################################################
+ 
+ goto-instrument$(EXEEXT): $(OBJ)
++  ifneq ($(PARAFROSTGPU),)
++	$(NVCC) g++ $(LINKFLAGS) -o $@ $^ -L$(PARAFROSTGPU)/build/gpu -lparafrost
++  else
+ 	$(LINKBIN)
++  endif
+ 
+ .PHONY: goto-instrument-mac-signed
+ 

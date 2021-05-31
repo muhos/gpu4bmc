@@ -1,0 +1,26 @@
+--- Makefile_old	2021-05-30 20:11:08.242631200 +0200
++++ Makefile	2021-05-30 21:00:13.032631200 +0200
+@@ -51,6 +51,11 @@
+ include ../config.inc
+ include ../common
+ 
++ifneq ($(PARAFROSTGPU),)
++  $(info ParaFROST: including CUDA library from this point forward)
++  LIBS += -L/usr/local/cuda/lib64 -lcudart
++endif
++
+ CLEANFILES = cbmc$(EXEEXT)
+ 
+ all: cbmc$(EXEEXT)
+@@ -68,7 +73,11 @@
+ ###############################################################################
+ 
+ cbmc$(EXEEXT): $(OBJ)
++  ifneq ($(PARAFROSTGPU),)
++	$(NVCC) g++ $(LINKFLAGS) -o $@ $^ -L$(PARAFROSTGPU)/build/gpu -lparafrost
++  else
+ 	$(LINKBIN)
++  endif
+ 
+ .PHONY: cbmc-mac-signed
+ 
