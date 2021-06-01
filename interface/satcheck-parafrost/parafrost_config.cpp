@@ -52,10 +52,12 @@ void parse_configuration(std::ifstream &configfile)
     if(strhas(str, "verbose"))
     {
       verbose = atof(val);
+	  quiet_en = true;
     }
     else if(strhas(str, "quiet"))
     {
       quiet_en = isEnabled(val);
+	  verbose = 0;
     }
     else if(strhas(str, "bumpreason"))
     {
@@ -526,7 +528,7 @@ void parse_configuration(std::ifstream &configfile)
 
   } // while-end
   if(quiet_en)
-    verbose = 0, pFROST::pfrost->opts.report_en = false;
+    pFROST::pfrost->opts.report_en = false;
   if(pFROST::pfrost->opts.all_en)
   {
     pFROST::pfrost->opts.ve_en = 1;
