@@ -7,7 +7,8 @@ This repository contains all necessary patches, interface and a script to instal
 ParaFROST is a parallel SAT solver with GPU-accelerated inprocessing capable of harnessing NIVIDA CUDA-enabled GPUs in applying modern simplification tecnhiques in parallel. New compact data structure and memory-aware Variable-Clause Eliminations (VCE) are designed specifically for BMC problems in the new version of our tool. Furthermore, the decision making heuristics are further improved.
 
 # Configuration
-CBMC is patched to read a configuration file before is instantiated. This file contains all options supported by ParaFROST in the format `<option>=<value>`. The configurable interface allows the user to explore all ParaFROST capabilities while running the verifier. 
+CBMC is patched to read a configuration file before starting the search. This file contains all options supported by ParaFROST in the format `<option>=<value>`. The configurable interface allows the user to explore all ParaFROST capabilities while running the verifier. 
+The file is located by default in `interface/satcheck-parafrost/parafrost_config.ini` and its path is set via an enviromental variable called `PFROSTCONFIG`.<br>
 
 # Install
 
@@ -42,7 +43,7 @@ For installing the driver + CUDA, run the following commands:<br>
 `sudo apt-get -y install cuda`<br>
 
 Now the GPU checker is ready to install by running the install script via the command `. install.sh -g`. 
-Mind the space after the dot to force the script to run under the current shell, thus keeping the value of the enviromental variable `PFROSTCONFIG` intact. The variable points to the configuration file location which set by default to `interface/satcheck-parafrost/parafrost_config.ini`.<br>
+Mind the space after the dot to force the script to run under the current shell, thus keeping the value of the enviromental variable `PFROSTCONFIG` intact.<br>
 
 The `CBMC_paraforst_gpu` binary will be created by default in the build directory.<br>
 
