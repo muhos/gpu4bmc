@@ -52,12 +52,12 @@ void parse_configuration(std::ifstream &configfile)
     if(strhas(str, "verbose"))
     {
       verbose = atof(val);
-	  quiet_en = true;
+      if (!verbose) quiet_en = true;
     }
     else if(strhas(str, "quiet"))
     {
       quiet_en = isEnabled(val);
-	  verbose = 0;
+      if (quiet_en) verbose = 0;
     }
     else if(strhas(str, "bumpreason"))
     {
