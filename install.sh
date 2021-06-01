@@ -167,7 +167,8 @@ else
 fi
 
 # install
-
+unset PARAFROSTCPU
+unset PARAFROSTGPU
 mkdir -p archives
 
 cbmc_rel=5.31.0
@@ -237,11 +238,9 @@ buildme () {
 	if [[ "$1" == "cpu" ]]; then 
 		export PARAFROSTCPU=../../parafrost
 		make -C $bmcdir/src &>> $logfile
-		unset PARAFROSTCPU
 	elif [[ "$1" == "gpu" ]]; then 
 		export PARAFROSTGPU=../../parafrost
 		make -C $bmcdir/src &>> $logfile
-		unset PARAFROSTGPU
 	fi
 	[ ! -f $bmcdir/src/cbmc/cbmc ] && error "CBMC not installed due to previous errors"
 	mkdir -p build
