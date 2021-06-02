@@ -4,7 +4,7 @@
 
 This repository contains all necessary patches, interface and a script to install the C Bounded Model Checker [CBMC](https://github.com/diffblue/cbmc) 5.31.0 with our SAT solver [ParaFROST](https://github.com/muhos/ParaFROST).
 
-ParaFROST is a parallel SAT solver with GPU-accelerated inprocessing capable of harnessing NIVIDA CUDA-enabled GPUs in applying modern simplification tecnhiques in parallel. New compact data structure and memory-aware Variable-Clause Eliminations (VCE) are designed specifically for BMC problems in the new version of our tool. Furthermore, the decision making heuristics are further improved.
+ParaFROST is a parallel SAT solver with GPU-accelerated inprocessing capable of harnessing NIVIDA CUDA-enabled GPUs in applying modern simplification tecnhiques in parallel. New compact data structure and memory-aware Variable-Clause Eliminations (VCE) are designed specifically for BMC problems in the new version of our tool. Furthermore, the decision making heuristics are further improved. Check our paper in [CAV'21](https://gears.win.tue.nl/papers/cbmc_gpu.pdf) for more information.
 
 # Configuration
 CBMC is patched to read a configuration file before starting the search. This file contains all options supported by ParaFROST in the format `<option>=<value>`. The configurable interface allows the user to explore all ParaFROST capabilities while running the verifier. 
@@ -17,18 +17,21 @@ To install either CBMC + ParaFROST (CPU) or CBMC + ParaFROST (GPU), use the `ins
 &nbsp; usage: `install.sh [ <option> ... ]`<br>
 &nbsp; where `<option>` is one of the following
 
-    -h or --help            print this usage summary
-    -c or --cpu             install CBMC + ParaFROST-CPU solver
-    -g or --gpu             install CBMC + ParaFROST-GPU solver
-    -n or --less            print less verbose messages
-    -q or --quiet           be quiet
-    --config=<target>       set the configuration file location
-                            to <target> (should be a full path)
-                            starting from root
-    --clean=<target>        remove completely old installation of
-                            CBMC <cpu | gpu | all | solvers> builds
-                            all targets cannot be combined with other
-                            options except for <solvers>
+       -h or --help            print this usage summary
+       -c or --cpu             install CBMC + ParaFROST-CPU solver
+       -g or --gpu             install CBMC + ParaFROST-GPU solver
+       -n or --less            print less verbose messages
+       -q or --quiet           be quiet
+       -d or --download        download only then patch CBMC
+       -r or --remove          remove source code and all created folders
+       --config=<target>       set the configuration file location
+                               to <target> (should be a full path)
+                               starting from root
+       --clean=<target>        remove completely old installation of
+                               CBMC <cpu | gpu | all | solvers> builds
+                               all targets cannot be combined with other
+                               options except for <solvers>
+
 
 ## GPU
 To build the GPU accelerated CBMC, make sure you have a CUDA-capable GPU with pre-installed NVIDIA driver and CUDA toolkit.

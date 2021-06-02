@@ -21,6 +21,8 @@ $ch	-c or --cpu           	install CBMC + ParaFROST-CPU solver
 $ch	-g or --gpu           	install CBMC + ParaFROST-GPU solver
 $ch	-n or --less          	print less verbose messages
 $ch	-q or --quiet         	be quiet
+$ch	-d or --download        download only then patch CBMC
+$ch	-r or --remove          remove source code and all created folders
 $ch	--config=<target>     	set the configuration file location
 $ch                        	to <target> (should be a full path)
 $ch                       	starting from root
@@ -30,13 +32,13 @@ $ch                       	all targets cannot be combined with other
 $ch                       	options except for <solvers>
 EOF
 printf "+%${lineWidth}s+\n" |tr ' ' '-'
-exit 0
+return 0
 }
 
 error () {
 printf "$ch error: %-$((lineWidth - 1))s\n" "$1"
 printf "$ch %${lineWidth}s+\n" |tr ' ' '-'
-exit 1
+return 1
 }
 
 #---------
@@ -44,10 +46,12 @@ exit 1
 #---------
 noverb=0
 quiet=0
-config=
-clean=""
+donly=0
+removeall=0
 icpu=0
 igpu=0
+config=
+clean=""
 
 while [ $# -gt 0 ]
 do
@@ -56,7 +60,8 @@ do
     -h|--help) usage;;
 	-n|--less) noverb=1;;
 	-q|--quiet) quiet=1;;	
-	
+	-d|--download) donly=1;;
+	-r|--remove) removeall=1;;
 	-c|--cpu) icpu=1;;
 	-g|--gpu) igpu=1;;
 	
@@ -125,6 +130,7 @@ fi
 pfbanner
 
 bmcdir=cbmc
+archdir=archives
 builddir=build
 bmcsrc=$bmcdir/src
 bmc_solvers=$bmcsrc/solvers
@@ -133,6 +139,23 @@ bmc_cbmc=$bmcsrc/cbmc
 bmc_gotoin=$bmcsrc/goto-instrument
 cbmccpu=$builddir/cbmc_parafrost_cpu
 cbmcgpu=$builddir/cbmc_parafrost_gpu
+
+# check removal option first
+if [ $removeall = 1 ]; then
+	logn "removing all created directory.."
+	rm -rf $bmcdir
+	rm -rf $builddir
+	rm -rf $archdir
+	rm -rf $logdir
+	rm -f $logfile
+	endline
+	ruler
+fi
+
+movelogs() {
+[ -f $logfile ] && mv $logfile $logdir/cbmc_install.log
+[ -f $bmcdir/parafrost/install.log ] && cp $bmcdir/parafrost/install.log $logdir/parafrost_install.log
+}
 
 cleanup () {
 	if [[ "$1" == "cpu" ]]; then 
@@ -163,35 +186,72 @@ else
 	if [[ "$clean" = "gpu" ]] || [[ "$clean" = "all" ]]; then
 		cleanGPU=1; logn "cleaning up CBMC + PFGPU.."; cleanup gpu; endline; ruler
 	fi
-	[ $cleanCPU = 1 ] || [ $cleanGPU = 1 ] && [ -f $logfile ] && mv $logfile $logdir/cbmc_install.log && exit 0
+	[ $cleanCPU = 1 ] || [ $cleanGPU = 1 ] && [ -f $logfile ] && mv $logfile $logdir/cbmc_install.log
+	[ $icpu = 0 ] && [ $igpu = 0 ] && [ $donly = 0 ] && return 0
 fi
 
 # install
 unset PARAFROSTCPU
 unset PARAFROSTGPU
-mkdir -p archives
+mkdir -p $archdir
 
 cbmc_rel=5.31.0
 cbmc_zip=cbmc-${cbmc_rel}.zip
 
-if [ ! -f archives/$cbmc_zip ]; then
+if [ ! -f $archdir/$cbmc_zip ]; then
 	logn "Downloading CBMC version $cbmc_rel.."
 	wget -q https://github.com/diffblue/cbmc/archive/$cbmc_zip
 	[ ! -f $cbmc_zip ] && error "could not download $cbmc_zip"
-	mv $cbmc_zip archives
+	mv $cbmc_zip $archdir
 	endline
 fi
 
 if [ ! -d $bmcdir ]; then
 	logn "Extracting $cbmc_zip archive.."
 	mkdir -p $bmcdir
-	unzip -q archives/$cbmc_zip -d $bmcdir
+	unzip -q $archdir/$cbmc_zip -d $bmcdir
 	mv $bmcdir/cbmc-*/* $bmcdir
 	rm -rf $bmcdir/cbmc-*
 	endline
 fi
 
 [ ! -d $bmcdir ] && error "cannot find CBMC root directory"
+
+# install functions
+configme () {
+	log "Setting ParaFROST configuration file to:"
+	unset PFROSTCONFIG
+	configfile=parafrost_config.ini
+	configsrc=$PWD/interface/satcheck-parafrost/$configfile
+	[ ! -f $configsrc ] && error "cannot find $configsrc"
+	configdest=
+	if [[ "$config" != "" ]]; then
+		[ ! -d $config ] && error "cannot find $config"
+		cp $configsrc $config
+		configdest=$config/$configfile	
+	else
+		configdest=$configsrc
+	fi
+	export PFROSTCONFIG=$configdest	
+	log "  $PFROSTCONFIG"
+}
+
+buildme () {
+	cleanup $1
+	make -C $bmcdir/src parafrost-download &>> $logfile
+	if [[ "$1" == "cpu" ]]; then 
+		export PARAFROSTCPU=../../parafrost
+		make -C $bmcdir/src &>> $logfile
+	elif [[ "$1" == "gpu" ]]; then 
+		export PARAFROSTGPU=../../parafrost
+		make -C $bmcdir/src &>> $logfile
+	fi
+	[ ! -f $bmcdir/src/cbmc/cbmc ] && error "CBMC not installed due to previous errors"
+	mkdir -p build
+	cbmcbin=build/cbmc_parafrost_${1}
+	cp $bmcdir/src/cbmc/cbmc $cbmcbin
+}
+#=====================================
 
 log "Preparing CBMC for ParaFROST integration.."
 interfacedir=interface
@@ -232,22 +292,18 @@ if $pattest $bmc_gotoin/Makefile < $patdir/goto-instrument/Makefile.patch &>/dev
 fi
 log ""
 
-buildme () {
-	cleanup $1
-	make -C $bmcdir/src parafrost-download &>> $logfile
-	if [[ "$1" == "cpu" ]]; then 
-		export PARAFROSTCPU=../../parafrost
-		make -C $bmcdir/src &>> $logfile
-	elif [[ "$1" == "gpu" ]]; then 
-		export PARAFROSTGPU=../../parafrost
-		make -C $bmcdir/src &>> $logfile
-	fi
-	[ ! -f $bmcdir/src/cbmc/cbmc ] && error "CBMC not installed due to previous errors"
-	mkdir -p build
-	cbmcbin=build/cbmc_parafrost_${1}
-	cp $bmcdir/src/cbmc/cbmc $cbmcbin
-}
-
+if [ $donly = 1 ]; then 
+	parafrost_release=2.2.3
+	parafrost_tag=parafrost-${parafrost_release}
+	parafrost_tar=${parafrost_tag}.tar.gz
+	logn "Downloading ParaFROST version $parafrost_release.."
+	curl -L --remote-name https://github.com/muhos/ParaFROST/archive/${parafrost_tar}  &> /dev/null
+	tar xfz $parafrost_tar
+	rm -rf $bmcdir/parafrost
+	mv ParaFROST-${parafrost_tag} $bmcdir/parafrost
+	rm $parafrost_tar
+	endline && log "" && configme && rm -rf $logfile $logdir && ruler && return 0
+fi
 
 if [ $icpu = 1 ]; then
 	logn "Building CBMC + ParaFROST-CPU [may take +10 min].."; buildme cpu; endline; log ""
@@ -256,25 +312,4 @@ if [ $igpu = 1 ]; then
 	logn "Building CBMC + ParaFROST-GPU [may take +15 min].."; buildme gpu; endline; log ""
 fi 
 
-ruler
-
-log "Setting ParaFROST configuration file to:"
-unset PFROSTCONFIG
-configfile=parafrost_config.ini
-configsrc=$PWD/interface/satcheck-parafrost/$configfile
-[ ! -f $configsrc ] && error "cannot find $configsrc"
-configdest=
-if [[ "$config" != "" ]]; then
-	[ ! -d $config ] && error "cannot find $config"
-	cp $configsrc $config
-	configdest=$config/$configfile	
-else
-	configdest=$configsrc
-fi
-export PFROSTCONFIG=$configdest	
-log "  $PFROSTCONFIG"
-
-[ -f $logfile ] && mv $logfile $logdir/cbmc_install.log
-[ -f $bmcdir/parafrost/install.log ] && cp $bmcdir/parafrost/install.log $logdir/parafrost_install.log
-
-pffinal
+ruler && configme && movelogs && pffinal
