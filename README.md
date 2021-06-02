@@ -4,7 +4,7 @@
 
 This repository contains all necessary patches, interface and a script to install the C Bounded Model Checker [CBMC](https://github.com/diffblue/cbmc) 5.31.0 with our SAT solver [ParaFROST](https://github.com/muhos/ParaFROST).
 
-ParaFROST is a parallel SAT solver with GPU-accelerated inprocessing capable of harnessing NIVIDA CUDA-enabled GPUs in applying modern simplification tecnhiques in parallel. New compact data structure and memory-aware Variable-Clause Eliminations (VCE) are designed specifically for BMC problems in the new version of our tool. Furthermore, the decision making heuristics are further improved.
+ParaFROST is a parallel SAT solver with GPU-accelerated inprocessing capable of harnessing NIVIDA CUDA-enabled GPUs in applying modern simplification tecnhiques in parallel. New compact data structure and memory-aware Variable-Clause Eliminations (VCE) are designed specifically for BMC problems in the new version of our tool. Furthermore, the decision making heuristics are further improved. Check our paper in [CAV'21](https://gears.win.tue.nl/papers/cbmc_gpu.pdf) for more information.
 
 # Configuration
 CBMC is patched to read a configuration file before starting the search. This file contains all options supported by ParaFROST in the format `<option>=<value>`. The configurable interface allows the user to explore all ParaFROST capabilities while running the verifier. 
