@@ -355,7 +355,7 @@ void parse_configuration(std::ifstream &configfile)
     }
     else if(strhas(str, "subsumemaxoccurs"))
     {
-      pFROST::pfrost->opts.subsume_min_occs = atof(val);
+      pFROST::pfrost->opts.subsume_max_occs = atof(val);
     }
     else if(strhas(str, "subsumereleff"))
     {

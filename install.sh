@@ -245,10 +245,11 @@ configme () {
 }
 
 buildme () {
-	if [ ! $update ]; then
+	if [ $update = 0 ]; then
 		cleanup $1
 		make -C $bmcdir/src parafrost-download &>> $logfile
 	fi
+	[ ! -d $bmcdir/parafrost ] && error "cannot find parafrost directory in $bmcdir"
 	if [[ "$1" == "cpu" ]]; then 
 		export PARAFROSTCPU=../../parafrost
 		make -C $bmcdir/src &>> $logfile
