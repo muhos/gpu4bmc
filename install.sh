@@ -304,7 +304,7 @@ fi
 log ""
 
 if [ $donly = 1 ]; then 
-	parafrost_release=2.2.3
+	parafrost_release=2.2.4
 	parafrost_tag=parafrost-${parafrost_release}
 	parafrost_tar=${parafrost_tag}.tar.gz
 	logn "Downloading ParaFROST version $parafrost_release.."
@@ -329,8 +329,8 @@ if [ $igpu = 1 ]; then
 	else
 		logn "Building CBMC + ParaFROST-GPU [may take +15 min].."
 	fi
-	buildme gpu;
-	endline; log "";
+	buildme gpu
+	endline && log ""
 fi 
 
 ruler && configme && movelogs && pffinal
