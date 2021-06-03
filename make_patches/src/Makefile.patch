@@ -5,7 +5,7 @@
  	@cd ../cadical && CXX=$(CXX) ./configure -O3 -s -j && make
  	@$(RM) $(cadical_release).tar.gz
 +	
-+parafrost_release=2.2.3
++parafrost_release=2.2.4
 +parafrost_tag=parafrost-$(parafrost_release)
 +parafrost_tar=$(parafrost_tag).tar.gz
 +parafrost-download:

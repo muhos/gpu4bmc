@@ -1,5 +1,7 @@
 #!/bin/bash
 
+(return 0 2>/dev/null) && srced=1 || srced=0
+
 ch='|'
 lineWidth=90
 logdir=logs
@@ -20,6 +22,8 @@ $ch	-h or --help          	print this usage summary
 $ch	-c or --cpu           	install CBMC + ParaFROST-CPU solver
 $ch	-g or --gpu           	install CBMC + ParaFROST-GPU solver
 $ch	-n or --less          	print less verbose messages
+$ch	-u or --update         	compile existing source code which
+$ch                         can only work with GPU compilation
 $ch	-q or --quiet         	be quiet
 $ch	-d or --download        download only then patch CBMC
 $ch	-r or --remove          remove source code and all created folders
@@ -32,13 +36,13 @@ $ch                       	all targets cannot be combined with other
 $ch                       	options except for <solvers>
 EOF
 printf "+%${lineWidth}s+\n" |tr ' ' '-'
-return 0
+[ $srced = 1 ] && return 0 || exit 0
 }
 
 error () {
 printf "$ch error: %-$((lineWidth - 1))s\n" "$1"
 printf "$ch %${lineWidth}s+\n" |tr ' ' '-'
-return 1
+[ $srced = 1 ] && return 1 || exit 1
 }
 
 #---------
@@ -47,6 +51,7 @@ return 1
 noverb=0
 quiet=0
 donly=0
+update=0
 removeall=0
 icpu=0
 igpu=0
@@ -60,8 +65,9 @@ do
     -h|--help) usage;;
 	-n|--less) noverb=1;;
 	-q|--quiet) quiet=1;;	
-	-d|--download) donly=1;;
+	-u|--update) update=1;;	
 	-r|--remove) removeall=1;;
+	-d|--download) donly=1;;
 	-c|--cpu) icpu=1;;
 	-g|--gpu) igpu=1;;
 	
@@ -78,6 +84,8 @@ do
   esac
   shift
 done
+
+[ $update = 1 ] && [ $icpu = 1 ] && error "update only works with the GPU compilation"
 
 if [[ "$clean" != "" ]] && [[ "$clean" != "solvers" ]] && [[ "$clean" != "cpu" ]] && [[ "$clean" != "gpu" ]] && [[ "$clean" != "all" ]]; then 
 	error "invalid clean target '$clean'"
@@ -187,7 +195,7 @@ else
 		cleanGPU=1; logn "cleaning up CBMC + PFGPU.."; cleanup gpu; endline; ruler
 	fi
 	[ $cleanCPU = 1 ] || [ $cleanGPU = 1 ] && [ -f $logfile ] && mv $logfile $logdir/cbmc_install.log
-	[ $icpu = 0 ] && [ $igpu = 0 ] && [ $donly = 0 ] && return 0
+	if [ $icpu = 0 ] && [ $igpu = 0 ] && [ $donly = 0 ]; then [ $srced = 1 ] && return 0 || exit 0; fi
 fi
 
 # install
@@ -237,8 +245,10 @@ configme () {
 }
 
 buildme () {
-	cleanup $1
-	make -C $bmcdir/src parafrost-download &>> $logfile
+	if [ ! $update ]; then
+		cleanup $1
+		make -C $bmcdir/src parafrost-download &>> $logfile
+	fi
 	if [[ "$1" == "cpu" ]]; then 
 		export PARAFROSTCPU=../../parafrost
 		make -C $bmcdir/src &>> $logfile
@@ -302,14 +312,24 @@ if [ $donly = 1 ]; then
 	rm -rf $bmcdir/parafrost
 	mv ParaFROST-${parafrost_tag} $bmcdir/parafrost
 	rm $parafrost_tar
-	endline && log "" && configme && rm -rf $logfile $logdir && ruler && return 0
+	endline && log "" && configme && rm -rf $logfile $logdir && ruler
+	[ $srced = 1 ] && return 0 || exit 0
 fi
 
 if [ $icpu = 1 ]; then
 	logn "Building CBMC + ParaFROST-CPU [may take +10 min].."; buildme cpu; endline; log ""
 fi 
 if [ $igpu = 1 ]; then 
-	logn "Building CBMC + ParaFROST-GPU [may take +15 min].."; buildme gpu; endline; log ""
+	if [ $update = 1 ]; then
+		logn "Updating ParaFROST-GPU compilation.."
+		cd $bmcdir/parafrost && ./install.sh -g -q && cd ../../
+		endline
+		logn "Updating CBMC + ParaFROST-GPU [may take +15 min].."
+	else
+		logn "Building CBMC + ParaFROST-GPU [may take +15 min].."
+	fi
+	buildme gpu;
+	endline; log "";
 fi 
 
 ruler && configme && movelogs && pffinal
