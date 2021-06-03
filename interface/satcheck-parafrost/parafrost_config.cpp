@@ -67,10 +67,6 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.chrono_en = isEnabled(val);
     }
-    else if(strhas(str, "chronoreuse"))
-    {
-      pFROST::pfrost->opts.chronoreuse_en = isEnabled(val);
-    }
     else if(strhas(str, "chronomin"))
     {
       pFROST::pfrost->opts.chrono_min = atof(val);
@@ -119,14 +115,6 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.mdmvsidsonly_en = isEnabled(val);
     }
-    else if(strhas(str, "mdmfusem"))
-    {
-      pFROST::pfrost->opts.mdmfusem_en = isEnabled(val);
-    }
-    else if(strhas(str, "mdmfuses"))
-    {
-      pFROST::pfrost->opts.mdmfuses_en = isEnabled(val);
-    }
     else if(strhas(str, "mdmlcv"))
     {
       pFROST::pfrost->opts.mdm_mcv_en = !isEnabled(val);
@@ -135,29 +123,17 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.mdm_vsids_pumps = atof(val);
     }
-    else if(strhas(str, "mdmvmfqpumps"))
+    else if(strhas(str, "mdmvmtfpumps"))
     {
-      pFROST::pfrost->opts.mdm_vmfq_pumps = atof(val);
+      pFROST::pfrost->opts.mdm_vmtf_pumps = atof(val);
     }
     else if(strhas(str, "mdmrounds"))
     {
       pFROST::pfrost->opts.mdm_rounds = atof(val);
     }
-    else if(strhas(str, "mdmfreq"))
-    {
-      pFROST::pfrost->opts.mdm_freq = atof(val);
-    }
     else if(strhas(str, "mdminc"))
     {
       pFROST::pfrost->opts.mdm_inc = atof(val);
-    }
-    else if(strhas(str, "mdmsinc"))
-    {
-      pFROST::pfrost->opts.mdm_sinc = atof(val);
-    }
-    else if(strhas(str, "mdmdiv"))
-    {
-      pFROST::pfrost->opts.mdm_div = atof(val);
     }
     else if(strhas(str, "mapperc"))
     {
@@ -329,10 +305,6 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.rephase_inc = atof(val);
     }
-    else if(strhas(str, "reusetrail"))
-    {
-      pFROST::pfrost->opts.reusetrail_en = isEnabled(val);
-    }
     else if(strhas(str, "restartinc"))
     {
       pFROST::pfrost->opts.restart_inc = atof(val);
@@ -381,7 +353,7 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.subsume_priorbins = atof(val);
     }
-    else if(strhas(str, "subsumeminoccurs"))
+    else if(strhas(str, "subsumemaxoccurs"))
     {
       pFROST::pfrost->opts.subsume_min_occs = atof(val);
     }
@@ -465,13 +437,13 @@ void parse_configuration(std::ifstream &configfile)
     {
       pFROST::pfrost->opts.ere_limit = atof(val);
     }
-    else if(strhas(str, "hse"))
+    else if(strhas(str, "sub"))
     {
-      pFROST::pfrost->opts.hse_en = isEnabled(val);
+      pFROST::pfrost->opts.sub_en = isEnabled(val);
     }
-    else if(strhas(str, "hsemax"))
+    else if(strhas(str, "submax"))
     {
-      pFROST::pfrost->opts.hse_limit = atof(val);
+      pFROST::pfrost->opts.sub_limit = atof(val);
     }
     else if(strhas(str, "lcvemin"))
     {
@@ -538,12 +510,12 @@ void parse_configuration(std::ifstream &configfile)
   }
   if(
     !pFROST::pfrost->opts.phases &&
-    (pFROST::pfrost->opts.ve_en || pFROST::pfrost->opts.hse_en ||
+    (pFROST::pfrost->opts.ve_en || pFROST::pfrost->opts.sub_en ||
      pFROST::pfrost->opts.bce_en))
     pFROST::pfrost->opts.phases = 1; // at least 1 phase needed
   if(
     pFROST::pfrost->opts.phases &&
-    !(pFROST::pfrost->opts.ve_en || pFROST::pfrost->opts.hse_en ||
+    !(pFROST::pfrost->opts.ve_en || pFROST::pfrost->opts.sub_en ||
       pFROST::pfrost->opts.bce_en))
     pFROST::pfrost->opts.phases = 0;
   if(pFROST::pfrost->opts.phases > 1 && !pFROST::pfrost->opts.ve_en)
