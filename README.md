@@ -54,3 +54,25 @@ To build a CPU-only version of CBMC + ParaFROST, run `. install.sh -c`.<br>
 
 # Test
 The GPU-accelerated version of CBMC with ParaFROST has a complete artifact we created to experimentally evaluate the effectiveness of accelerating Boumded Model Checking (BMC) using GPUs on verifying AWS C99 package. The artifact can be downloaded [here](https://gears.win.tue.nl/software/gpu4bmc/).<br>
+
+# Reference
+If you are using CBMC + ParaFROST, please cite the following paper:
+
+```
+@inproceedings{gpu4bmc-OsamaW-cav20,
+  author    = {Muhammad Osama and
+               Anton Wijs},
+  editor    = {Alexandra Silva and
+               K. Rustan M. Leino},
+  title     = {{GPU} Acceleration of Bounded Model Checking with ParaFROST},
+  booktitle = {Computer Aided Verification - 33rd International Conference, {CAV}
+               2021, Virtual Event, July 20-23, 2021, Proceedings, Part {II}},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {12760},
+  pages     = {447--460},
+  publisher = {Springer},
+  year      = {2021},
+  url       = {https://doi.org/10.1007/978-3-030-81688-9\_21},
+  doi       = {10.1007/978-3-030-81688-9\_21}
+}
+```
